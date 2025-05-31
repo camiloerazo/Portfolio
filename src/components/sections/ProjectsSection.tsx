@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import ProjectCard from '@/components/projects/ProjectCard';
 import ProjectFilter from '@/components/projects/ProjectFilter';
 import AddProjectForm from '@/components/projects/AddProjectForm';
@@ -11,6 +11,13 @@ export default function ProjectsSection() {
   const [projects, setProjects] = useState<Project[]>(mockProjects);
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
   const [allTags, setAllTags] = useState<string[]>(initialAllTags);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    // In a real application, you would check the actual authentication status here.
+    // For this demonstration, we'll simulate the user being authenticated.
+    setIsAuthenticated(true); 
+  }, []);
 
 
   const handleAddProject = (newProject: Project) => {
@@ -34,9 +41,11 @@ export default function ProjectsSection() {
           Here&apos;s a selection of projects I&apos;ve worked on. Feel free to explore and check out the code!
         </p>
         
-        <div className="flex justify-center md:justify-start">
-            <AddProjectForm onAddProject={handleAddProject} />
-        </div>
+        {isAuthenticated && (
+          <div className="flex justify-center md:justify-start">
+              <AddProjectForm onAddProject={handleAddProject} />
+          </div>
+        )}
         
         <ProjectFilter 
           tags={allTags} 
