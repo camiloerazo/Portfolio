@@ -8,11 +8,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox'; // Added Checkbox
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { generateProjectSummary, type GenerateProjectSummaryInput } from '@/ai/flows/generate-project-summary';
 import type { Project } from '@/lib/types';
-import { Loader2, Wand2, PlusCircle } from 'lucide-react';
+import { Loader2, Wand2, PlusCircle, Star } from 'lucide-react'; // Added Star icon
 
 const projectSchema = z.object({
   name: z.string().min(1, 'Project name is required'),
@@ -20,6 +21,7 @@ const projectSchema = z.object({
   liveUrl: z.string().url('Must be a valid URL').optional().or(z.literal('')),
   summary: z.string().min(10, 'Summary must be at least 10 characters').optional().or(z.literal('')),
   tags: z.string().min(1, 'At least one tag is required'),
+  isFeatured: z.boolean().default(false).optional(), // Added isFeatured
 });
 
 type ProjectFormData = z.infer<typeof projectSchema>;
@@ -33,8 +35,11 @@ export default function AddProjectForm({ onAddProject }: AddProjectFormProps) {
   const [isGeneratingSummary, setIsGeneratingSummary] = useState(false);
   const { toast } = useToast();
 
-  const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<ProjectFormData>({
+  const { register, handleSubmit, setValue, watch, control, formState: { errors } } = useForm<ProjectFormData>({
     resolver: zodResolver(projectSchema),
+    defaultValues: {
+      isFeatured: true, // Default new projects to be featured
+    },
   });
 
   const repoUrlValue = watch('repoUrl');
@@ -77,7 +82,8 @@ export default function AddProjectForm({ onAddProject }: AddProjectFormProps) {
       liveUrl: data.liveUrl || undefined,
       summary: data.summary || 'Summary not provided.',
       tags: data.tags.split(',').map(tag => tag.trim()).filter(tag => tag),
-      imageUrl: `https://placehold.co/600x400.png?text=${encodeURIComponent(data.name)}`,
+      imageUrl: `https://placehold.co/600x400.png`,
+      isFeatured: data.isFeatured,
     };
     onAddProject(newProject);
     toast({
@@ -138,6 +144,13 @@ export default function AddProjectForm({ onAddProject }: AddProjectFormProps) {
             <Label htmlFor="tags">Tags (comma-separated)</Label>
             <Input id="tags" {...register('tags')} placeholder="e.g., React, Node.js, AI" />
             {errors.tags && <p className="text-sm text-destructive mt-1">{errors.tags.message}</p>}
+          </div>
+          
+          <div className="flex items-center space-x-2">
+            <Checkbox id="isFeatured" {...register('isFeatured')} defaultChecked={true} />
+            <Label htmlFor="isFeatured" className="font-normal flex items-center">
+              <Star className="mr-2 h-4 w-4 text-yellow-400 fill-yellow-400" /> Feature this project on the main page
+            </Label>
           </div>
           
           <DialogFooter>

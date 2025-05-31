@@ -6,6 +6,7 @@ export interface Project {
   summary: string;
   tags: string[];
   imageUrl?: string;
+  isFeatured?: boolean; // Added for featuring projects
 }
 
 export interface Experience {

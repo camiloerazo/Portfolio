@@ -9,6 +9,7 @@ export const mockProjects: Project[] = [
     summary: 'A full-featured e-commerce platform built with Next.js, Stripe, and PostgreSQL. Includes product listings, cart functionality, and user authentication.',
     tags: ['Next.js', 'React', 'TypeScript', 'Stripe', 'PostgreSQL', 'Tailwind CSS'],
     imageUrl: 'https://placehold.co/600x400.png',
+    isFeatured: true,
   },
   {
     id: '2',
@@ -17,6 +18,7 @@ export const mockProjects: Project[] = [
     summary: 'A collaborative task management application using Firebase for real-time updates and authentication. Features drag-and-drop boards and task assignments.',
     tags: ['React', 'Firebase', 'JavaScript', 'Material UI'],
     imageUrl: 'https://placehold.co/600x400.png',
+    isFeatured: true,
   },
   {
     id: '3',
@@ -26,6 +28,7 @@ export const mockProjects: Project[] = [
     summary: 'This very portfolio website, designed to showcase my projects and skills. Built with Next.js and Tailwind CSS, focusing on a clean and modern UI.',
     tags: ['Next.js', 'TypeScript', 'Tailwind CSS', 'Vercel'],
     imageUrl: 'https://placehold.co/600x400.png',
+    isFeatured: false, // This one won't show by default
   },
   {
     id: '4',
@@ -34,6 +37,7 @@ export const mockProjects: Project[] = [
     summary: 'A tool that uses a large language model to generate concise summaries of blog posts from URLs. Built with Python, Flask, and a third-party AI API.',
     tags: ['Python', 'Flask', 'AI', 'NLP'],
     imageUrl: 'https://placehold.co/600x400.png',
+    isFeatured: true,
   },
 ];
 
@@ -74,4 +78,6 @@ export const socialLinks = {
   twitter: 'https://twitter.com/yourusername',
 };
 
+// Re-calculate allTags based on all projects, not just featured ones initially loaded.
+// This ensures the filter options remain comprehensive.
 export const allTags = Array.from(new Set(mockProjects.flatMap(p => p.tags))).sort();

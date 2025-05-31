@@ -5,40 +5,43 @@ import ProjectCard from '@/components/projects/ProjectCard';
 import ProjectFilter from '@/components/projects/ProjectFilter';
 import AddProjectForm from '@/components/projects/AddProjectForm';
 import type { Project } from '@/lib/types';
-import { mockProjects, allTags as initialAllTags } from '@/lib/data'; // Using mock data for now
+import { mockProjects, allTags as initialAllTags } from '@/lib/data'; 
 
 export default function ProjectsSection() {
-  const [projects, setProjects] = useState<Project[]>(mockProjects);
+  // Initialize with all projects from mockData
+  const [allProjects, setAllProjects] = useState<Project[]>(mockProjects);
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
-  const [allTags, setAllTags] = useState<string[]>(initialAllTags);
+  // Tags for filtering should come from all projects, not just featured ones
+  const [availableTags, setAvailableTags] = useState<string[]>(initialAllTags); 
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
-    // In a real application, you would check the actual authentication status here.
-    // For this demonstration, we'll simulate the user being authenticated.
+    // Simulate authentication
     setIsAuthenticated(true); 
   }, []);
 
-
   const handleAddProject = (newProject: Project) => {
-    setProjects(prevProjects => [newProject, ...prevProjects]);
-    const updatedTags = Array.from(new Set([...allTags, ...newProject.tags])).sort();
-    setAllTags(updatedTags);
+    setAllProjects(prevProjects => [newProject, ...prevProjects]);
+    // Update available tags if the new project introduces new ones
+    const updatedTags = Array.from(new Set([...availableTags, ...newProject.tags])).sort();
+    setAvailableTags(updatedTags);
   };
 
-  const filteredProjects = useMemo(() => {
-    if (!selectedTag) {
-      return projects;
+  // Filtered projects to display: first by featured, then by selected tag
+  const displayedProjects = useMemo(() => {
+    let projectsToShow = allProjects.filter(project => project.isFeatured);
+    if (selectedTag) {
+      projectsToShow = projectsToShow.filter(project => project.tags.includes(selectedTag));
     }
-    return projects.filter(project => project.tags.includes(selectedTag));
-  }, [projects, selectedTag]);
+    return projectsToShow;
+  }, [allProjects, selectedTag]);
 
   return (
     <section id="projects" className="py-16 md:py-24">
       <div className="container mx-auto">
-        <h2 className="text-3xl font-headline font-bold text-center mb-4 sm:text-4xl">My Projects</h2>
+        <h2 className="text-3xl font-headline font-bold text-center mb-4 sm:text-4xl">My Featured Projects</h2>
         <p className="text-center text-muted-foreground mb-12 max-w-xl mx-auto">
-          Here&apos;s a selection of projects I&apos;ve worked on. Feel free to explore and check out the code!
+          Here's a selection of my key projects. Feel free to explore and check out the code!
         </p>
         
         {isAuthenticated && (
@@ -48,20 +51,21 @@ export default function ProjectsSection() {
         )}
         
         <ProjectFilter 
-          tags={allTags} 
+          tags={availableTags} 
           selectedTag={selectedTag} 
           onSelectTag={setSelectedTag} 
         />
 
-        {filteredProjects.length > 0 ? (
+        {displayedProjects.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {filteredProjects.map((project) => (
+            {displayedProjects.map((project) => (
               <ProjectCard key={project.id} project={project} />
             ))}
           </div>
         ) : (
           <p className="text-center text-muted-foreground mt-8">
-            No projects found for the selected tag. Try another filter or add a new project!
+            No featured projects found {selectedTag ? `for the tag "${selectedTag}"` : ''}. 
+            {isAuthenticated ? ' Try adding a new featured project or adjust filters!' : 'Check back later!'}
           </p>
         )}
       </div>
