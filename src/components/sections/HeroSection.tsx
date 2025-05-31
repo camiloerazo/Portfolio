@@ -7,10 +7,10 @@ export default function HeroSection() {
     <section id="hero" className="py-20 md:py-32 bg-secondary">
       <div className="container mx-auto text-center">
         <h1 className="text-4xl font-headline font-bold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl">
-          Hello, I&apos;m <span className="text-primary">Your Name</span>.
+          Hello, I&apos;m <span className="text-primary">Camilo Erazo</span>.
         </h1>
         <p className="mt-6 max-w-2xl mx-auto text-lg leading-8 text-muted-foreground sm:text-xl">
-          I&apos;m a passionate software developer specializing in creating modern, responsive, and user-friendly web applications. Welcome to my personal portfolio where I showcase my projects and professional journey.
+          I&apos;m a passionate full-stack software developer specializing in creating modern, responsive, and user-friendly web applications. Welcome to my personal portfolio where I showcase my projects and professional journey.
         </p>
         <div className="mt-10 flex items-center justify-center gap-x-6">
           <Button asChild size="lg">

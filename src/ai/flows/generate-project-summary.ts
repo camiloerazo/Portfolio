@@ -1,81 +1,104 @@
 'use server';
 
-/**
- * @fileOverview This file defines a Genkit flow to generate a concise summary of a GitHub project
- * by analyzing its README file. It includes the flow definition, input/output schemas,
- * and a wrapper function to call the flow.
- *
- * @module src/ai/flows/generate-project-summary
- *
- * @interface GenerateProjectSummaryInput - Defines the input schema for the generateProjectSummary function.
- * @interface GenerateProjectSummaryOutput - Defines the output schema for the generateProjectSummary function.
- * @function generateProjectSummary - The exported function to call the generateProjectSummaryFlow.
- */
-
-import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+import type { GenerateProjectSummaryInput, GenerateProjectSummaryOutput } from '@/lib/schemas';
 
 /**
- * Input schema for the generateProjectSummary flow.
- * @typedef {object} GenerateProjectSummaryInput
- * @property {string} repoUrl - The URL of the GitHub repository.
+ * Generates a project summary based on repository information
+ * This is a simplified version that creates a summary from available data
  */
-const GenerateProjectSummaryInputSchema = z.object({
-  repoUrl: z.string().describe('The URL of the GitHub repository.'),
-});
-export type GenerateProjectSummaryInput = z.infer<
-  typeof GenerateProjectSummaryInputSchema
->;
-
-/**
- * Output schema for the generateProjectSummary flow.
- * @typedef {object} GenerateProjectSummaryOutput
- * @property {string} summary - A concise summary of the GitHub project.
- */
-const GenerateProjectSummaryOutputSchema = z.object({
-  summary: z.string().describe('A concise summary of the GitHub project.'),
-});
-export type GenerateProjectSummaryOutput = z.infer<
-  typeof GenerateProjectSummaryOutputSchema
->;
-
-/**
- * Wrapper function to call the generateProjectSummaryFlow.
- * @async
- * @function generateProjectSummary
- * @param {GenerateProjectSummaryInput} input - The input for the flow.
- * @returns {Promise<GenerateProjectSummaryOutput>} The output of the flow.
- */
-export async function generateProjectSummary(
+export async function generateEnhancedProjectSummary(
   input: GenerateProjectSummaryInput
 ): Promise<GenerateProjectSummaryOutput> {
-  return generateProjectSummaryFlow(input);
+  const { repoInfo, readme, codeFiles } = input;
+
+  // Extract technologies from topics and language
+  const technologies = [
+    ...repoInfo.topics,
+    ...(repoInfo.language ? [repoInfo.language] : []),
+  ].filter((tech, index, self) => self.indexOf(tech) === index); // Remove duplicates
+
+  // Generate a basic summary from available information
+  const summary = [
+    repoInfo.description || `A ${repoInfo.language || 'software'} project`,
+    readme ? 'Includes detailed documentation.' : 'Documentation available in the repository.',
+    `Built with ${technologies.join(', ')}.`,
+    repoInfo.stargazers_count > 0 ? `Has ${repoInfo.stargazers_count} stars on GitHub.` : '',
+  ].filter(Boolean).join(' ');
+
+  // Extract key features from README if available
+  const keyFeatures = readme
+    ? extractFeaturesFromReadme(readme)
+    : ['Repository available on GitHub', 'Source code accessible'];
+
+  // Determine complexity based on available information
+  const complexity = determineComplexity(repoInfo, codeFiles);
+
+  return {
+    summary,
+    keyFeatures,
+    technologies,
+    complexity,
+  };
 }
 
-const prompt = ai.definePrompt({
-  name: 'generateProjectSummaryPrompt',
-  input: {schema: GenerateProjectSummaryInputSchema},
-  output: {schema: GenerateProjectSummaryOutputSchema},
-  prompt: `You are a seasoned software developer tasked with summarizing GitHub repositories.
+/**
+ * Extracts key features from README content
+ */
+function extractFeaturesFromReadme(readme: string): string[] {
+  const features: string[] = [];
+  
+  // Look for common README sections that might contain features
+  const featureSections = [
+    /## Features\n([\s\S]*?)(?=##|$)/i,
+    /## Key Features\n([\s\S]*?)(?=##|$)/i,
+    /### Features\n([\s\S]*?)(?=###|$)/i,
+    /### Key Features\n([\s\S]*?)(?=###|$)/i,
+  ];
 
-  Given the URL of a GitHub repository, analyze the README file (if available) and other relevant information to generate a concise and informative summary of the project.
-
-  The summary should highlight the project's purpose, key features, and any notable technologies used.
-
-  Repository URL: {{{repoUrl}}}
-
-  Summary:
-  `,
-});
-
-const generateProjectSummaryFlow = ai.defineFlow(
-  {
-    name: 'generateProjectSummaryFlow',
-    inputSchema: GenerateProjectSummaryInputSchema,
-    outputSchema: GenerateProjectSummaryOutputSchema,
-  },
-  async input => {
-    const {output} = await prompt(input);
-    return output!;
+  for (const pattern of featureSections) {
+    const match = readme.match(pattern);
+    if (match && match[1]) {
+      // Split by bullet points or numbers
+      const items = match[1]
+        .split(/[-*]\s|^\d+\.\s/gm)
+        .map(item => item.trim())
+        .filter(item => item.length > 0);
+      
+      features.push(...items);
+    }
   }
-);
+
+  // If no features found, return some basic information
+  if (features.length === 0) {
+    features.push(
+      'Documentation available in README',
+      'Source code accessible on GitHub'
+    );
+  }
+
+  return features.slice(0, 5); // Limit to 5 key features
+}
+
+/**
+ * Determines project complexity based on available information
+ */
+function determineComplexity(
+  repoInfo: GenerateProjectSummaryInput['repoInfo'],
+  codeFiles: string[] | undefined
+): 'beginner' | 'intermediate' | 'advanced' {
+  // Simple heuristic based on available information
+  const factors = [
+    // More stars might indicate a more complex project
+    repoInfo.stargazers_count > 100 ? 2 : 1,
+    // More topics might indicate more technologies used
+    repoInfo.topics.length > 5 ? 2 : 1,
+    // More code files might indicate more complexity
+    codeFiles && codeFiles.length > 10 ? 2 : 1,
+  ];
+
+  const complexityScore = factors.reduce((sum, factor) => sum + factor, 0);
+
+  if (complexityScore >= 5) return 'advanced';
+  if (complexityScore >= 3) return 'intermediate';
+  return 'beginner';
+}

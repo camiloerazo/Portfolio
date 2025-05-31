@@ -10,7 +10,7 @@ export default function Footer() {
           <span>Code Showcase &copy; {currentYear}</span>
         </div>
         <p className="text-sm text-muted-foreground">
-          Designed with <span className="text-red-500">&hearts;</span> by an AI enthusiast.
+          Designed with <span className="text-red-500">&hearts;</span> by Camilo Erazo
         </p>
       </div>
     </footer>

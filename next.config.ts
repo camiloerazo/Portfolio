@@ -17,6 +17,11 @@ const nextConfig: NextConfig = {
         pathname: '/**',
       },
     ],
+    domains: [
+      'images.unsplash.com',
+      // Add other domains if you use images from other external sites
+      // 'placehold.co', // If you still want to allow placeholders, though they aren't used with Unsplash successfully fetching
+    ],
   },
 };
 

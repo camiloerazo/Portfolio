@@ -73,9 +73,9 @@ export const mockExperience: Experience[] = [
 ];
 
 export const socialLinks = {
-  linkedin: 'https://www.linkedin.com/in/yourusername',
-  github: 'https://github.com/yourusername',
-  twitter: 'https://twitter.com/yourusername',
+  linkedin: 'https://www.linkedin.com/in/camiloerazo1',
+  github: 'https://github.com/camiloerazo',
+  phoneNumber: '+57-312-216-55-33',
 };
 
 // Re-calculate allTags based on all projects, not just featured ones initially loaded.

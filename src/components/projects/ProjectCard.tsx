@@ -17,10 +17,12 @@ export default function ProjectCard({ project }: ProjectCardProps) {
         <div className="relative w-full h-48">
           <Image
             src={project.imageUrl}
-            alt={project.name}
-            layout="fill"
-            objectFit="cover"
-            data-ai-hint="software project technology"
+            alt={`${project.name} project preview`}
+            fill
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            className="object-cover"
+            priority={false}
+            quality={85}
           />
         </div>
       )}

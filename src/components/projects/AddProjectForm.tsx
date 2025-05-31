@@ -11,7 +11,8 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox'; // Added Checkbox
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
-import { generateProjectSummary, type GenerateProjectSummaryInput } from '@/ai/flows/generate-project-summary';
+import { generateEnhancedProjectSummary } from '@/ai/flows/generate-project-summary';
+import type { GenerateProjectSummaryInput } from '@/lib/schemas';
 import type { Project } from '@/lib/types';
 import { Loader2, Wand2, PlusCircle, Star } from 'lucide-react'; // Added Star icon
 
@@ -55,12 +56,29 @@ export default function AddProjectForm({ onAddProject }: AddProjectFormProps) {
     }
     setIsGeneratingSummary(true);
     try {
-      const input: GenerateProjectSummaryInput = { repoUrl: repoUrlValue };
-      const result = await generateProjectSummary(input);
+      const [owner, repo] = repoUrlValue
+        .replace('https://github.com/', '')
+        .split('/');
+
+      // Create a basic repoInfo object
+      const repoInfo = {
+        name: repo,
+        description: null,
+        language: null,
+        topics: [],
+        stargazers_count: 0,
+        forks_count: 0,
+      };
+
+      const result = await generateEnhancedProjectSummary({
+        repoUrl: repoUrlValue,
+        repoInfo,
+      });
+
       setValue('summary', result.summary);
       toast({
         title: 'Summary Generated',
-        description: 'AI-powered summary has been populated.',
+        description: 'Project summary has been populated.',
       });
     } catch (error) {
       console.error('Error generating summary:', error);

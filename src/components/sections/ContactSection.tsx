@@ -1,6 +1,6 @@
 import { socialLinks } from '@/lib/data';
 import { Button } from '@/components/ui/button';
-import { Github, Linkedin, Twitter, Mail } from 'lucide-react'; // Added Mail icon
+import { Github, Linkedin, Phone, Mail } from 'lucide-react'; // Changed Twitter to Phone
 
 export default function ContactSection() {
   return (
@@ -12,7 +12,7 @@ export default function ContactSection() {
         </p>
         <div className="flex justify-center gap-4">
           <Button asChild variant="outline" size="lg">
-            <a href={`mailto:your.email@example.com`} aria-label="Email">
+            <a href={`mailto:juancamiloerazo82@gmail.com`} aria-label="Email">
               <Mail className="mr-2 h-5 w-5" /> Email Me
             </a>
           </Button>
@@ -26,10 +26,10 @@ export default function ContactSection() {
               <Github className="mr-2 h-5 w-5" /> GitHub
             </a>
           </Button>
-          {socialLinks.twitter && (
+          {socialLinks.phoneNumber && (
              <Button asChild variant="outline" size="lg" className="hover:bg-primary/10 hover:text-primary">
-                <a href={socialLinks.twitter} target="_blank" rel="noopener noreferrer" aria-label="Twitter">
-                <Twitter className="mr-2 h-5 w-5" /> Twitter
+                <a href={`tel:${socialLinks.phoneNumber}`} aria-label="Phone Number">
+                <Phone className="mr-2 h-5 w-5" /> Call Me
                 </a>
             </Button>
           )}
