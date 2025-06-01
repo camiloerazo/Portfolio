@@ -21,13 +21,8 @@ export default function ProjectsSection() {
       }
       const data = await response.json();
       
-      // Get featured projects from localStorage
-      const featuredProjectIds = JSON.parse(
-        localStorage.getItem('portfolio_featured_projects') || '[]'
-      ) as string[];
-
-      // Set featured status based on localStorage
-      const projectsWithFeatured: Project[] = data.map((project: any) => ({
+      // Set all projects directly without featured filtering
+      const projects: Project[] = data.map((project: any) => ({
         id: project.id.toString(),
         name: project.name,
         repoUrl: project.repoUrl,
@@ -35,14 +30,13 @@ export default function ProjectsSection() {
         summary: project.summary,
         tags: project.tags || [],
         imageUrl: project.imageUrl,
-        isFeatured: featuredProjectIds.includes(project.id.toString()),
       }));
 
-      setAllProjects(projectsWithFeatured);
+      setAllProjects(projects);
       
       // Extract unique tags from all projects
       const tags = Array.from(new Set(
-        projectsWithFeatured.flatMap((project: Project) => project.tags)
+        projects.flatMap((project: Project) => project.tags)
       )).sort();
       setAvailableTags(tags);
     } catch (error) {
@@ -59,25 +53,14 @@ export default function ProjectsSection() {
 
   useEffect(() => {
     fetchProjects();
-
-    // Listen for featured projects updates
-    const handleFeaturedUpdate = () => {
-      fetchProjects();
-    };
-
-    window.addEventListener('featuredProjectsUpdated', handleFeaturedUpdate);
-    return () => {
-      window.removeEventListener('featuredProjectsUpdated', handleFeaturedUpdate);
-    };
   }, [toast]);
 
-  // Filtered projects to display: by featured status and selected tag
+  // Filtered projects to display: only by selected tag
   const displayedProjects = useMemo(() => {
-    let projectsToShow = allProjects.filter(project => project.isFeatured);
     if (selectedTag) {
-      projectsToShow = projectsToShow.filter(project => project.tags.includes(selectedTag));
+      return allProjects.filter(project => project.tags.includes(selectedTag));
     }
-    return projectsToShow;
+    return allProjects;
   }, [allProjects, selectedTag]);
 
   if (isLoading) {
@@ -94,9 +77,9 @@ export default function ProjectsSection() {
   return (
     <section id="projects" className="py-16 md:py-24">
       <div className="container mx-auto">
-        <h2 className="text-3xl font-headline font-bold text-center mb-4 sm:text-4xl">Selected Works</h2>
+        <h2 className="text-3xl font-headline font-bold text-center mb-4 sm:text-4xl">My Projects</h2>
         <p className="text-center text-muted-foreground mb-12 max-w-xl mx-auto">
-          A curated collection of my best projects, showcasing my skills and experience in software development.
+          A collection of my public GitHub repositories, showcasing my work and experience in software development.
         </p>
         
         <ProjectFilter 

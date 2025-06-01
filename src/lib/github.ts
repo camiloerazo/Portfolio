@@ -19,6 +19,7 @@ export interface GitHubRepo {
   forks_count: number;
   created_at: string;
   updated_at: string;
+  private: boolean;
 }
 
 /**
@@ -33,19 +34,23 @@ export async function fetchGitHubRepos(username: string): Promise<GitHubRepo[]> 
       per_page: 100, // Maximum allowed by GitHub API
     });
 
-    return data.map(repo => ({
-      id: repo.id,
-      name: repo.name,
-      description: repo.description,
-      html_url: repo.html_url,
-      homepage: repo.homepage,
-      topics: repo.topics || [],
-      language: repo.language,
-      stargazers_count: repo.stargazers_count,
-      forks_count: repo.forks_count,
-      created_at: repo.created_at,
-      updated_at: repo.updated_at,
-    }));
+    // Filter for public repositories and ensure all required fields are present
+    return data
+      .filter(repo => !repo.private)
+      .map(repo => ({
+        id: repo.id,
+        name: repo.name,
+        description: repo.description,
+        html_url: repo.html_url,
+        homepage: repo.homepage || null,
+        topics: repo.topics || [],
+        language: repo.language || null,
+        stargazers_count: repo.stargazers_count || 0,
+        forks_count: repo.forks_count || 0,
+        created_at: repo.created_at || new Date().toISOString(),
+        updated_at: repo.updated_at || new Date().toISOString(),
+        private: repo.private,
+      }));
   } catch (error) {
     console.error('Error fetching GitHub repositories:', error);
     throw error;
@@ -67,7 +72,7 @@ export function convertRepoToProject(repo: GitHubRepo): Project {
       ...(repo.language ? [repo.language] : []),
     ],
     imageUrl: `https://placehold.co/600x400.png`, // You might want to generate a better image
-    isFeatured: repo.stargazers_count > 0, // Example criteria for featuring
+    isFeatured: true, // Always show all public repositories
   };
 }
 
@@ -121,7 +126,7 @@ export async function fetchRepoMainFiles(owner: string, repo: string): Promise<s
 
       const fileContents = await Promise.all(
         codeFiles.map(async file => {
-          if ('download_url' in file) {
+          if ('download_url' in file && file.download_url) {
             const response = await fetch(file.download_url);
             return response.text();
           }
